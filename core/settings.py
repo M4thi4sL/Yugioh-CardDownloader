@@ -1,6 +1,53 @@
-from PyQt6.QtWidgets import QLineEdit, QDialog, QMainWindow, QPushButton, QCheckBox, QVBoxLayout, QHBoxLayout, QWidget, QFormLayout
+from PyQt6.QtWidgets import (
+    QLineEdit,
+    QDialog,
+    QMainWindow,
+    QPushButton,
+    QCheckBox,
+    QVBoxLayout,
+    QHBoxLayout,
+    QWidget,
+    QFormLayout,
+    QFileDialog,
+)
 from PyQt6.QtGui import QIcon, QColor, QPalette
 from PyQt6.QtCore import QThread, Qt, pyqtSignal, QSize
+
+import configparser
+
+
+class SettingsManager:
+    def __init__(self):
+        self.config = configparser.ConfigParser()
+
+    def save_settings(self, force_download, card_dir):
+        # Set the values in the config parser
+        self.config["Settings"] = {
+            "force_download": str(force_download),
+            "card_dir": card_dir,
+        }
+
+        # Specify the path to your .ini file
+        ini_file_path = ".\\config.ini"
+
+        # Write the configuration to the .ini file
+        with open(ini_file_path, "w") as configfile:
+            self.config.write(configfile)
+
+    def load_settings(self):
+        # Specify the path to your .ini file
+        ini_file_path = ".\\config.ini"
+
+        # Read the configuration from the .ini file
+        self.config.read(ini_file_path)
+
+        if "Settings" in self.config:
+            settings = self.config["Settings"]
+            force_download = settings.getboolean("force_download", False)
+            card_dir = settings.get("card_dir", "")
+            return force_download, card_dir
+        else:
+            return False, ""
 
 
 class SettingsDialog(QDialog):
@@ -15,16 +62,13 @@ class SettingsDialog(QDialog):
         self.force_checkbox = QCheckBox("Force Download", self)
         settings_layout.addRow(self.force_checkbox)
 
-        self.card_dir_edit = QLineEdit(self)
-        self.card_dir_edit.setPlaceholderText("Card Directory")
-        settings_layout.addRow("Card Directory", self.card_dir_edit)
+        # Replace the QLineEdit with a QPushButton for selecting the directory
+        self.card_dir_button = QPushButton("Select Directory", self)
+        self.card_dir_button.clicked.connect(self.select_card_directory)
+        settings_layout.addRow("Card Directory", self.card_dir_button)
 
-        # setting defaults
-        # TODO write settings to .ini file upon clicking apply.
-        # TODO read settings from .ini when user clicked revert (returning to previous )
-
-        self.original_force_download = self.force_checkbox.isChecked()
-        self.original_card_dir = self.card_dir_edit.text()
+        # Load the settings when the Settings window is opened
+        self.load_settings()
 
         # Apply alternating background colors to form layout rows
         for i in range(settings_layout.rowCount()):
@@ -37,11 +81,16 @@ class SettingsDialog(QDialog):
         # Add apply and default button
         bottom_layout = QHBoxLayout()
         apply_button = QPushButton("Apply", self)
-        apply_button.clicked.connect(self.accept)
+        apply_button.clicked.connect(self.save_settings)
         bottom_layout.addWidget(apply_button)
 
+        # Add a "Revert" button
+        revert_button = QPushButton("Revert", self)
+        revert_button.clicked.connect(self.revert_settings)
+        bottom_layout.addWidget(revert_button)
+
         default_button = QPushButton("Defaults", self)
-        default_button.clicked.connect(self.default_settings)
+        default_button.clicked.connect(self.load_default_settings)
         bottom_layout.addWidget(default_button)
 
         layout.addLayout(settings_layout)
@@ -69,12 +118,45 @@ class SettingsDialog(QDialog):
 
     def get_card_dir(self):
         # Get the value of the card directory setting
-        return self.card_dir_edit.text()
+        return self.card_dir_button.text()
 
     def set_card_dir(self, card_dir):
         # Set the value of the card directory setting
-        self.card_dir_edit.setText(card_dir)
+        self.card_dir_button.setText(card_dir)
 
-    def default_settings(self):
-        # default the settings to their original values
-        self.set_force_download(self.original_force_download)
+    def save_settings(self):
+        settings_manager = SettingsManager()
+        force_download = self.get_force_download()
+        card_dir = self.get_card_dir()
+        settings_manager.save_settings(force_download, card_dir)
+
+    def load_settings(self):
+        settings_manager = SettingsManager()
+        force_download, card_dir = settings_manager.load_settings()
+
+        self.set_force_download(force_download)
+        self.set_card_dir(card_dir)
+        return force_download, card_dir
+
+    def load_default_settings(self):
+        settings_manager = SettingsManager()
+        self.set_force_download(False)
+        self.set_card_dir(".\\")
+        self.save_settings()
+
+    def revert_settings(self):
+        # Load and revert to the previously saved settings
+        force_download, card_dir = self.load_settings()
+        self.set_force_download(force_download)
+        self.set_card_dir(card_dir)
+
+    def select_card_directory(self):
+        options = QFileDialog.Option.ShowDirsOnly
+
+        selected_directory = QFileDialog.getExistingDirectory(
+            self, "Select Card Directory", self.card_dir_button.text(), options=options
+        )
+
+        if selected_directory:
+            # Update the button text with the selected directory
+            self.card_dir_button.setText(selected_directory)

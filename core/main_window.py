@@ -81,7 +81,7 @@ class CardImageDownloaderApp(QMainWindow):
 
     def start_download(self):
         if self.worker is None or not self.worker.isRunning():
-            force = self.force_download
+            force = SettingsDialog(self).get_force_download()
             json_file = "resources\\php\\cardinfo.php"
             if not os.path.exists(json_file):
                 QMessageBox.critical(
@@ -109,14 +109,6 @@ class CardImageDownloaderApp(QMainWindow):
             self.worker.download_finished.connect(self.download_finished)
             self.worker.start()
 
-    @property
-    def force_download(self):
-        return self._force_download
-
-    @force_download.setter
-    def force_download(self, value):
-        self._force_download = value
-
     def update_progress(self, value):
         self.progress_bar.setValue(value)
         self.update_title(
@@ -128,17 +120,7 @@ class CardImageDownloaderApp(QMainWindow):
         self.setWindowTitle(new_title)  # Set the window title directly
 
     def open_settings(self):
-        settings_dialog = SettingsDialog(self)
-        # Retrieve the current state of the "Force Download" checkbox
-        force_download_state = self.force_download  # Use the property to get the state
-        settings_dialog.set_force_download(force_download_state)
-
-        result = settings_dialog.exec()
-        if result == QDialog.DialogCode.Accepted:
-            # Retrieve the updated state of the "Force Download" checkbox
-            force_download_state = settings_dialog.get_force_download()
-            # Apply the updated state using the property
-            self.force_download = force_download_state
+        settings_dialog = SettingsDialog(self).exec()
 
     def download_finished(self):
         self.worker = None
