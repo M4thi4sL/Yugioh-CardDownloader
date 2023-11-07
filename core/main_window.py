@@ -24,6 +24,7 @@ class CardImageDownloaderApp(QMainWindow):
         self.init_ui()
         self.worker = None
         self._force_download = False
+        self.is_downloading = False  # New boolean variable to track the download state
 
     def init_ui(self):
         self.setWindowTitle("YGO Image Downloader")
@@ -31,7 +32,7 @@ class CardImageDownloaderApp(QMainWindow):
         self.central_widget = QWidget(self)
         self.setCentralWidget(self.central_widget)
         icon = QIcon(
-            "resources\\icons\\icon.png"
+            ".\\resources\\icons\\icon.png"
         )  # Replace with the actual path to your icon image
         self.setWindowIcon(icon)
 
@@ -46,18 +47,16 @@ class CardImageDownloaderApp(QMainWindow):
         bottom_layout = QHBoxLayout()
 
         # start download button
-        self.start_button = QPushButton("Download", self)
-        self.start_button.setIcon(
-            QIcon("resources\\icons\\downloads.png")
-        )  # Replace with the path to your icon
-        self.start_button.setToolTip("Click to start downloading card images")
-        self.start_button.clicked.connect(self.start_download)
-        bottom_layout.addWidget(self.start_button)
+        self.download_button = QPushButton("Download", self)
+        self.download_button.setIcon(QIcon(".\\resources\\icons\\downloads.png"))
+        self.download_button.setToolTip("Click to start downloading card images")
+        self.download_button.clicked.connect(self.toggle_download)
+        bottom_layout.addWidget(self.download_button)
 
         # settings button
         self.settings_button = QPushButton(self)
         settings_icon = QIcon(
-            "resources\\icons\\settings.png"
+            ".\\resources\\icons\\settings.png"
         )  # Replace with the path to your settings icon
 
         self.settings_button.setIcon(
@@ -82,7 +81,7 @@ class CardImageDownloaderApp(QMainWindow):
     def start_download(self):
         if self.worker is None or not self.worker.isRunning():
             force = SettingsDialog(self).get_force_download()
-            json_file = "resources\\php\\cardinfo.php"
+            json_file = ".\\resources\\php\\cardinfo.php"
             if not os.path.exists(json_file):
                 QMessageBox.critical(
                     None,
@@ -101,7 +100,7 @@ class CardImageDownloaderApp(QMainWindow):
                 num_entries
             )  # Set the maximum value to the number of entries
 
-            card_dir = ".\\cards"
+            card_dir = SettingsDialog(self).get_card_dir()
             os.makedirs(card_dir, exist_ok=True)
 
             self.worker = DownloadWorker(data, card_dir, force)
@@ -122,6 +121,37 @@ class CardImageDownloaderApp(QMainWindow):
     def open_settings(self):
         settings_dialog = SettingsDialog(self).exec()
 
-    def download_finished(self):
+    def reset_download_button(self):
+        # reset back to original button
+        self.download_button.setText("Download")
+        self.download_button.setIcon(QIcon("resources\\icons\\downloads.png"))
+        self.update_progress(0)
+
+    def download_finished(self, interrupted):
         self.worker = None
-        QMessageBox.information(None, "Download Complete", "Download finished.")
+        if interrupted:
+            QMessageBox.information(
+                None, "Download Cancelled", "Download was cancelled."
+            )
+            self.reset_download_button()
+        else:
+            QMessageBox.information(None, "Download Complete", "Download finished.")
+            self.reset_download_button()
+
+    def toggle_download(self):
+        if not self.is_downloading:
+            # Start the download
+            self.is_downloading = True
+            self.download_button.setText("Cancel")
+            self.download_button.setIcon(QIcon(".\\resources\\icons\\close.png"))
+            self.download_button.setToolTip("Click to cancel the download")
+            self.start_download()
+
+        else:
+            # Cancel the download
+            if self.worker is not None and self.worker.isRunning():
+                self.worker.requestInterruption()
+                self.worker.wait()
+                self.worker = None
+                self.is_downloading = False
+                self.reset_download_button()

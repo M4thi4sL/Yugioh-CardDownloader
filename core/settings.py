@@ -141,7 +141,7 @@ class SettingsDialog(QDialog):
     def load_default_settings(self):
         settings_manager = SettingsManager()
         self.set_force_download(False)
-        self.set_card_dir(".\\")
+        self.set_card_dir(".\\cards")
         self.save_settings()
 
     def revert_settings(self):

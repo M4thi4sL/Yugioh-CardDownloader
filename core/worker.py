@@ -6,21 +6,24 @@ from .logger import logger
 
 class DownloadWorker(QThread):
     update_progress = pyqtSignal(int)
-    download_finished = pyqtSignal()
+    download_finished = pyqtSignal(bool)
 
     def __init__(self, data, card_dir, force):
         super().__init__()
         self.data = data
         self.card_dir = card_dir
         self.force = force
+        self.interrupted = False
 
     def run(self):
         for key, card in enumerate(self.data):
             if self.isInterruptionRequested():
-                break
+                self.interrupted = True  # Set the interrupted flag to True
+                break  # Exit the loop if the thread is interrupted
+
             self.download_image(card, self.card_dir, force=self.force)
-            self.update_progress.emit(key + 1)
-        self.download_finished.emit()
+            self.update_progress.emit(key + 1)  # Update progress
+        self.download_finished.emit(self.interrupted)
 
     def download_image(self, card, output_dir, force=False):
         if "image_url" in card["card_images"][0]:
