@@ -1,6 +1,6 @@
 # Project specific
 /cards
-/resources/php
+/resources/php/*.php
 /.build
 /.images
 log.txt
