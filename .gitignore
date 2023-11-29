@@ -1,6 +1,8 @@
 # Project specific
 /cards
 /resources/php
+/.build
+/.images
 log.txt
 
 # Byte-compiled / optimized / DLL files
@@ -157,3 +159,4 @@ cython_debug/
 #.idea/
 config.ini
 config.ini
+.build/build.json
