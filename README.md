@@ -1,5 +1,6 @@
 # Yugioh-CardDownloader
 Downloads yugioh images using the YGPPRO DECK api with a convenient GUI.
+Please download the latest cardinfo.php from the link provided in resources/php/ when using the source version of the program.
 
 ![main_window](https://github.com/MathiasLArt/Yugioh-CardDownloader/assets/59111832/7dcdab7c-0ce7-4bb2-8d7a-8962f334367e)
 
