@@ -1,6 +1,6 @@
 import sys
 import argparse
-from PyQt6.QtWidgets import QApplication
+from PySide6.QtWidgets import QApplication
 
 from core.main_window import CardImageDownloaderApp
 

@@ -8,7 +8,7 @@
             "name": "YGO_CARD_DOWNLOADER",
             "type": "python",
             "request": "launch",
-            "program": "E:\\_Github\\Yugioh-CardDownloader\\main.py",
+            "program": "main.py",
             "console": "integratedTerminal",
             "justMyCode": true
         }

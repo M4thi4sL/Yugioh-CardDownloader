@@ -1,18 +1,12 @@
-from PyQt6.QtWidgets import (
-    QLineEdit,
+from PySide6.QtWidgets import (
     QDialog,
-    QMainWindow,
     QPushButton,
     QCheckBox,
     QVBoxLayout,
     QHBoxLayout,
-    QWidget,
     QFormLayout,
     QFileDialog,
 )
-from PyQt6.QtGui import QIcon, QColor, QPalette
-from PyQt6.QtCore import QThread, Qt, pyqtSignal, QSize
-
 import configparser
 
 

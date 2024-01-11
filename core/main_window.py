@@ -1,7 +1,8 @@
 import os
 import json
 
-from PyQt6.QtWidgets import (
+from PySide6.QtGui import QIcon
+from PySide6.QtWidgets import (
     QMainWindow,
     QProgressBar,
     QVBoxLayout,
@@ -9,10 +10,8 @@ from PyQt6.QtWidgets import (
     QWidget,
     QHBoxLayout,
     QMessageBox,
-    QDialog,
 )
-from PyQt6.QtGui import QIcon, QColor, QPalette
-from PyQt6.QtCore import QThread, Qt, pyqtSignal, QSize
+from PySide6.QtCore import QSize
 
 from .settings import SettingsDialog
 from .worker import DownloadWorker

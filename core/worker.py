@@ -1,12 +1,12 @@
-from PyQt6.QtCore import QThread, pyqtSignal
+from PySide6.QtCore import QThread, Signal
 import requests
 import os
 from .logger import logger
 
 
 class DownloadWorker(QThread):
-    update_progress = pyqtSignal(int)
-    download_finished = pyqtSignal(bool)
+    update_progress = Signal(int)
+    download_finished = Signal(bool)
 
     def __init__(self, data, card_dir, force):
         super().__init__()
