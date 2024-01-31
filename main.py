@@ -2,7 +2,9 @@ import sys
 import argparse
 from PySide6.QtWidgets import QApplication
 
+
 from core.main_window import CardImageDownloaderApp
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
